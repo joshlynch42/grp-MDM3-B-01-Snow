@@ -2,11 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 #load in data
-S1 = pd.read_csv('Alaska/Alexander_Lake_1267.csv')
-S2 = pd.read_csv('Alaska/Fielding_Lake_1268.csv')
-S3 = pd.read_csv('Alaska/Flower_Mountain_1285.csv')
-S4 = pd.read_csv('Alaska/Heen_Latinee_1270.csv')
-S5 = pd.read_csv('Alaska/Jack_Wade_Jct_1275.csv')
+S1 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Alexander_Lake_1267.csv')
+S2 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Fielding_Lake_1268.csv')
+S3 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Flower_Mountain_1285.csv')
+S4 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Heen_Latinee_1270.csv')
+S5 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Jack_Wade_Jct_1275.csv')
 #create a list of dates: replace start and end values with the range of the data at the station
 time_axis = pd.date_range(start='10/01/2014', end='02/03/2021')
 time_axis = pd.Series(time_axis)
