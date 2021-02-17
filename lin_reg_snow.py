@@ -12,14 +12,14 @@ import numpy as np
 # 2. Change the file location (line 43)
 # ---------------------------------------------------- #
 
-station_name = 'Alexander Lake (1267)'
+station_name = 'Fielding Lake (1268)'
 column_name = station_name + ' Snow Depth (cm) Start of Day Values'
 
 def create_df_shift(file_name, column_name):  # Creating a dataframe using a csv
     df = pd.read_csv(file_name)  # df stands for dataframe
     shifted = df[column_name]  # Creating an extra column containing the previous days snow depth
     shifted = shifted.shift(periods=1)
-    df['Prev Snow Depth (in)'] = shifted  # Adds previous snow levels to dataframe
+    df['Prev Snow Depth (cm)'] = shifted  # Adds previous snow levels to dataframe
     df = df.dropna()  # Removes null values
     return df
 
@@ -40,7 +40,7 @@ def test_train_split(df, column_name):
 
 
 def lin_reg_plot(column_name):
-    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Alexander_Lake_1267.csv'  # File location
+    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
     df = create_df_shift(file_name, column_name)
 
     X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)
@@ -74,9 +74,9 @@ def lin_reg_plot(column_name):
     plt.plot(X, y_test, 'b-', label='Measured')
 
     plt.legend()
-    plt.ylabel('Temperature (C)')
+    plt.ylabel('Snow Depth (cm)')
     plt.xlabel('Date')
-    plt.title('Alexander Lake Temperature')
+    plt.title('Fielding Lake Snow Depth')
     plt.show()
 
 
