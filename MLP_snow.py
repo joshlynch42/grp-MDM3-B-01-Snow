@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 # ------------------- Instructions ------------------- #
 # 1. Change 'station_name' below to your station (line 19)
-# 2. Change the file location (line 64)
+# 2. Change the file location (line 66)
 # 3. Change the number of iteration you would like the code to take when calculating the mean rms. Don't go too high as
-#    the code is very slow. (try between 1-20) (line 82)
+#    the code is very slow. (try between 1-10) (line 93)
 # ---------------------------------------------------- #
 
 station_name = 'Fielding Lake (1268)'
@@ -50,7 +50,7 @@ def scaling_values(X_train, X_test):  # Scaling the train values
 
 
 def plot_nn(predictions_s, y_test, predictions_n):
-    X = np.linspace(0, 1, len(y_test))
+    X = np.linspace(0, 1, len(y_test))  # NEED TO CHANGE THIS FOR DATES
     plt.figure(figsize=(8, 5))
     plt.plot(X, predictions_s, 'r-', label='MLP Shifted')
     plt.plot(X, predictions_n, 'g-', label='MLP Not Shifted')
@@ -66,8 +66,8 @@ def MLP_fit(column_name, plot):
     file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
     df = create_df(file_name, column_name)
 
-    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)
-    X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)
+    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)  # _s at the end for shifted
+    X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)  # _n at the end for not shifted
 
     X_train_s, X_test_s = scaling_values(X_train_s, X_test_s)
     X_train_n, X_test_n = scaling_values(X_train_n, X_test_n)
@@ -98,7 +98,7 @@ for i in range(num_it):
         total_rms_s += rms_s
         total_rms_n += rms_n
     else:
-        rms_s, rms_n = MLP_fit(column_name, 'yes')
+        rms_s, rms_n = MLP_fit(column_name, 'yes')  # Plotting the last iteration of NN as an example
         total_rms_s += rms_s
         total_rms_n += rms_n
 

@@ -9,7 +9,7 @@ import numpy as np
 
 # ------------------- Instructions ------------------- #
 # 1. Change 'station_name' below to your station (line 15)
-# 2. Change the file location (line 43)
+# 2. Change the file location (line 56)
 # ---------------------------------------------------- #
 
 station_name = 'Fielding Lake (1268)'
@@ -39,40 +39,12 @@ def test_train_split(df, column_name):
     return X_train, X_test, y_train, y_test
 
 
-def lin_reg_plot(column_name):
-    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
-    df = create_df_shift(file_name, column_name)
-
-    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)
-    X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)
-
-    reg_s = LinearRegression().fit(X_train_s, y_train)
-    prediction_s = reg_s.predict(X_test_s)
-
-    reg_n = LinearRegression().fit(X_train_n, y_train)
-    prediction_n = reg_n.predict(X_test_n)
-
-    X = np.linspace(0, 1, len(X_test_n))
+def plot_nn(predictions_s, y_test, predictions_n):
+    X = np.linspace(0, 1, len(y_test))  # NEED TO CHANGE THIS FOR DATES
     plt.figure(figsize=(8, 5))
-
-    rms = mean_squared_error(y_test, prediction_s, squared=False)
-    reg_score = reg_s.score(X_train_s, y_train)
-
-    print('--------- Using previous snow depth -------------')
-    print('rms is ' + str(rms))  # Calculating and printing mean rms
-    print('reg score is ' + str(reg_score))  # This is the score calculated by sklearn
-
-    rms = mean_squared_error(y_test, prediction_n, squared=False)
-    reg_score = reg_n.score(X_train_n, y_train)
-
-    print('------- Not using previous snow depth ------------')
-    print('rms is ' + str(rms))  # Calculating and printing mean rms
-    print('reg score is ' + str(reg_score))  # This is the score calculated by sklearn
-
-    plt.plot(X, prediction_s, 'r-', label='Shifted Linear regression')
-    plt.plot(X, prediction_n, 'g-', label='Non Shifted Linear regression')
+    plt.plot(X, predictions_s, 'r-', label='Shifted Linear regression')
+    plt.plot(X, predictions_n, 'g-', label='Non Shifted Linear regression')
     plt.plot(X, y_test, 'b-', label='Measured')
-
     plt.legend()
     plt.ylabel('Snow Depth (cm)')
     plt.xlabel('Date')
@@ -80,4 +52,36 @@ def lin_reg_plot(column_name):
     plt.show()
 
 
-lin_reg_plot(column_name)
+def lin_reg_plot(column_name, plot):
+    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
+    df = create_df_shift(file_name, column_name)
+
+    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)  # _s at the end for shifted
+    X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)  # _n at the end for not shifted
+
+    reg_s = LinearRegression().fit(X_train_s, y_train)  # Creating a linear regression
+    prediction_s = reg_s.predict(X_test_s)  # Creating predictions using test data
+
+    reg_n = LinearRegression().fit(X_train_n, y_train)  # Creating a linear regression
+    prediction_n = reg_n.predict(X_test_n)  # Creating predictions using test data
+
+    rms_s = mean_squared_error(y_test, prediction_s, squared=False)
+    reg_score_s = reg_s.score(X_train_s, y_train)
+
+    rms_n = mean_squared_error(y_test, prediction_n, squared=False)
+    reg_score_n = reg_n.score(X_train_n, y_train)
+
+    if plot == 'yes':
+        plot_nn(prediction_s, y_test, prediction_n)
+
+    return rms_s, rms_n, reg_score_s, reg_score_n
+
+
+rms_s, rms_n, reg_score_s, reg_score_n = lin_reg_plot(column_name, 'yes')
+print('--------- Using previous snow depth -------------')
+print('rms is ' + str(rms_s))  # Calculating and printing mean rms
+print('reg score is ' + str(reg_score_s))  # This is the score calculated by sklearn
+
+print('------- Not using previous snow depth ------------')
+print('rms is ' + str(rms_n))  # Calculating and printing mean rms
+print('reg score is ' + str(reg_score_n))  # This is the score calculated by sklearn
