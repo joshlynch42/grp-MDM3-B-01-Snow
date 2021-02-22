@@ -10,18 +10,17 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------- #
 
 # load in data
-S1 = pd.read_csv('D:/Users/Joshg/Documents/MDM3/Alaska/Alexander_Lake_1267.csv')
+S1 = pd.read_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Alexander_Lake_1267.csv')
 
 # create a list of dates: replace start and end values with the range of the data at the station
 min_date = S1['Date'].iloc[0]
 max_date = S1['Date'].iloc[-1]
 # print(min_date)
 # print(max_date)
-time_axis = pd.date_range(start='10/01/2014', end='02/03/2021')
+time_axis = pd.date_range(start=min_date, end=max_date)
 time_axis = pd.Series(time_axis)
 # remove date column since not needed
 station_no_date = S1.drop(['Date'], axis=1)
-
 Data = []
 # setting up indexes to remove nans
 for row, column in station_no_date.iteritems():
@@ -85,14 +84,12 @@ Data = np.transpose(Data)
 final_df = pd.DataFrame(Data)
 Moving_average = final_df.rolling(31).mean()
 Moving_average['Date'] = time_axis  # Add date column to df
-
+print(Moving_average)
 # print in blue the uncleaned data, in red the cleaned data
 # change the date values to the range you wanna view
-plot_df = Moving_average.loc['2015-01-01':'2020-01-01']
-plot_df.plot(kind='line', use_index=True, y=1, color='red')
-plot_df = final_df.loc['2015-01-01':'2020-01-01']
-plot_df.plot(kind='line', use_index=True, y=1, color='blue')
-# plt.show()
+Moving_average.plot(kind='line', x='Date', y=1, color='red')
+final_df.plot(kind='line', use_index=True, y=1, color='blue')
+plt.show()
 
 
 # -------------- Writing to the file ------------------------- #
@@ -104,9 +101,8 @@ Moving_average = Moving_average[cols]  # Apply new order of columns
 dict = {}
 for i in range(len(Moving_average.columns)):  # Make dict of old and new column headers
     dict[Moving_average.columns[i]] = S1.columns[i]
-    print(dict)
 
 Moving_average = Moving_average.dropna()  # Remove null values
 Moving_average = Moving_average.rename(dict, axis='columns')  # Change headers to the orginal names
 # Write data frame to a new file
-Moving_average.to_csv('D:/Users/Joshg/Documents/MDM3/Alaska/Alexander_Lake_1267_clean.csv', index=False)
+Moving_average.to_csv('C:/Users/ale/Documents/Code/MDM3_Snow/Alaska/Alexander_Lake_1267_clean.csv', index=False)
