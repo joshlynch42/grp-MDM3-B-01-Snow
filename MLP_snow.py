@@ -4,16 +4,18 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
+import datetime
+from datetime import timedelta
 
 # Neural network that predicts the next day's amount of snow using temperature, precipitation and previous days snow
 # This model uses the previous day's amount of snow to calculate the following day's. Comment out lines 25-27 to get a
 # result without the previous days data
 
 # ------------------- Instructions ------------------- #
-# 1. Change 'station_name' below to your station (line 19)
-# 2. Change the file location (line 66)
+# 1. Change 'station_name' below to your station (line 21)
+# 2. Change the file location (line 73)
 # 3. Change the number of iteration you would like the code to take when calculating the mean rms. Don't go too high as
-#    the code is very slow. (try between 1-10) (line 93)
+#    the code is very slow. (try between 1-10) (line 100)
 # ---------------------------------------------------- #
 
 station_name = 'Fielding Lake (1268)'
@@ -36,7 +38,12 @@ def test_train_split(df, column_name):
     X_train, X_test, y_train, y_test = X.iloc[0:train_size], X.iloc[train_size + 1:-1], y.iloc[0:train_size], y.iloc[
                                                                                                   train_size + 1:-1]
     X_train, X_test, y_train, y_test = np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
-    return X_train, X_test, y_train, y_test
+
+    min_date = df['Date'].iloc[train_size]
+    date_time_obj = datetime.datetime.strptime(min_date, '%Y-%m-%d')
+    max_date = date_time_obj + timedelta(days=len(y_test)-1)
+    time_axis = pd.date_range(start=min_date, end=max_date)
+    return X_train, X_test, y_train, y_test, time_axis
 
 
 def scaling_values(X_train, X_test):  # Scaling the train values
@@ -49,15 +56,15 @@ def scaling_values(X_train, X_test):  # Scaling the train values
     return X_train, X_test
 
 
-def plot_nn(predictions_s, y_test, predictions_n):
-    X = np.linspace(0, 1, len(y_test))  # NEED TO CHANGE THIS FOR DATES
+def plot_nn(predictions_s, y_test, predictions_n, time_axis):
     plt.figure(figsize=(8, 5))
-    plt.plot(X, predictions_s, 'r-', label='MLP Shifted')
-    plt.plot(X, predictions_n, 'g-', label='MLP Not Shifted')
-    plt.plot(X, y_test, 'b-', label='Measured')
+    plt.plot(time_axis, predictions_s, 'r-', label='Using previous day')
+    plt.plot(time_axis, predictions_n, 'g-', label='Without previous day')
+    plt.plot(time_axis, y_test, 'b-', label='Measured')
     plt.legend()
     plt.ylabel('Snow Depth (cm)')
     plt.xlabel('Date')
+    plt.gcf().autofmt_xdate()
     plt.title('Fielding Lake Snow Depth')
     plt.show()
 
@@ -66,7 +73,7 @@ def MLP_fit(column_name, plot):
     file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
     df = create_df(file_name, column_name)
 
-    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)  # _s at the end for shifted
+    X_train_s, X_test_s, y_train, y_test, time_axis = test_train_split(df, column_name)  # _s at the end for shifted
     X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)  # _n at the end for not shifted
 
     X_train_s, X_test_s = scaling_values(X_train_s, X_test_s)
@@ -83,7 +90,7 @@ def MLP_fit(column_name, plot):
     rms_n = mean_squared_error(y_test, predictions_n, squared=False)  # Calculating root mean squared error
 
     if plot == 'yes':
-        plot_nn(predictions_s, y_test, predictions_n)
+        plot_nn(predictions_s, y_test, predictions_n, time_axis)
     return rms_s, rms_n
 
 
