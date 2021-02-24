@@ -3,13 +3,15 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
+from datetime import timedelta
 
 # Linear regression that predicts the next day's amount of snow using temperature, precipitation and previous days snow
 # This code produces to models. One uses the previous days snow depth and the other doesn't.
 
 # ------------------- Instructions ------------------- #
-# 1. Change 'station_name' below to your station (line 15)
-# 2. Change the file location (line 56)
+# 1. Change 'station_name' below to your station (line 17)
+# 2. Change the file location (line 63)
 # ---------------------------------------------------- #
 
 station_name = 'Fielding Lake (1268)'
@@ -36,18 +38,23 @@ def test_train_split(df, column_name):
     train_size = int(round(len(X) * 0.6, 0))  # Training data is 60% of data
     X_train, X_test, y_train, y_test = X.iloc[0:train_size], X.iloc[train_size+1:-1], y.iloc[0:train_size], y.iloc[train_size+1:-1]
     X_train, X_test, y_train, y_test = np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
-    return X_train, X_test, y_train, y_test
+
+    min_date = df['Date'].iloc[train_size]
+    date_time_obj = datetime.datetime.strptime(min_date, '%Y-%m-%d')
+    max_date = date_time_obj + timedelta(days=len(y_test) - 1)
+    time_axis = pd.date_range(start=min_date, end=max_date)
+    return X_train, X_test, y_train, y_test, time_axis
 
 
-def plot_nn(predictions_s, y_test, predictions_n):
-    X = np.linspace(0, 1, len(y_test))  # NEED TO CHANGE THIS FOR DATES
+def plot_nn(predictions_s, y_test, predictions_n, time_axis):
     plt.figure(figsize=(8, 5))
-    plt.plot(X, predictions_s, 'r-', label='Shifted Linear regression')
-    plt.plot(X, predictions_n, 'g-', label='Non Shifted Linear regression')
-    plt.plot(X, y_test, 'b-', label='Measured')
+    plt.plot(time_axis, predictions_s, 'r-', label='Using previous day')
+    plt.plot(time_axis, predictions_n, 'g-', label='Without previous day')
+    plt.plot(time_axis, y_test, 'b-', label='Measured')
     plt.legend()
     plt.ylabel('Snow Depth (cm)')
     plt.xlabel('Date')
+    plt.gcf().autofmt_xdate()
     plt.title('Fielding Lake Snow Depth')
     plt.show()
 
@@ -56,7 +63,7 @@ def lin_reg_plot(column_name, plot):
     file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
     df = create_df_shift(file_name, column_name)
 
-    X_train_s, X_test_s, y_train, y_test = test_train_split(df, column_name)  # _s at the end for shifted
+    X_train_s, X_test_s, y_train, y_test, time_axis = test_train_split(df, column_name)  # _s at the end for shifted
     X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)  # _n at the end for not shifted
 
     reg_s = LinearRegression().fit(X_train_s, y_train)  # Creating a linear regression
@@ -72,7 +79,7 @@ def lin_reg_plot(column_name, plot):
     reg_score_n = reg_n.score(X_train_n, y_train)
 
     if plot == 'yes':
-        plot_nn(prediction_s, y_test, prediction_n)
+        plot_nn(prediction_s, y_test, prediction_n, time_axis)
 
     return rms_s, rms_n, reg_score_s, reg_score_n
 
