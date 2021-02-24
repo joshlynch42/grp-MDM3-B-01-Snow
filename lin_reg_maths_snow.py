@@ -54,7 +54,7 @@ def temp(y, train_size):
 def test_train_split(df, column_name):
     y = df[column_name]  # Assign snow depth to y-axis (labels)
     X = df.drop([column_name, 'Date'], axis=1)  # Removes date and snow depth column
-    train_size = int(round(len(X) * 0.6, 0))  # Training data is 60% of data
+    train_size = int(round(len(X) * 0.8, 0))  # Training data is 60% of data
     y_train, y_test = y.iloc[0:train_size], y.iloc[train_size+1:-1]  # Split snow depth into test and train
     y_train, y_test = np.array(y_train), np.array(y_test)  # Turn test/train into arrays
     temp_train, temp_test, prec_train, prec_test = temp(y, train_size)  # Use maths model to create temp/prec datasets
@@ -66,6 +66,15 @@ def test_train_split(df, column_name):
     date_time_obj = datetime.datetime.strptime(min_date, '%Y-%m-%d')
     max_date = date_time_obj + timedelta(days=len(y_test) - 1)
     time_axis = pd.date_range(start=min_date, end=max_date)
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(time_axis, temp_test, 'b-', label='Temp')
+    plt.legend()
+    plt.ylabel('Snow Depth (cm)')
+    plt.xlabel('Date')
+    plt.gcf().autofmt_xdate()
+    plt.title('Fielding Lake Snow Depth')
+    plt.show()
     return X_train, X_test, y_train, y_test, time_axis
 
 

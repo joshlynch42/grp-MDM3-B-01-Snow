@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 from datetime import timedelta
+import math
 
 # Linear regression that predicts the next day's amount of snow using temperature, precipitation and previous days snow
 # This code produces to models. One uses the previous days snow depth and the other doesn't.
@@ -14,13 +15,13 @@ from datetime import timedelta
 # 2. Change the file location (line 63)
 # ---------------------------------------------------- #
 
-station_name = 'Fielding Lake (1268)'
+station_name = 'Alexander Lake (1267)'
 column_name = station_name + ' Snow Depth (cm) Start of Day Values'
 
 def create_df_shift(file_name, column_name):  # Creating a dataframe using a csv
     df = pd.read_csv(file_name)  # df stands for dataframe
     shifted = df[column_name]  # Creating an extra column containing the previous days snow depth
-    shifted = shifted.shift(periods=1)
+    shifted = shifted.shift(periods=90)
     df['Prev Snow Depth (cm)'] = shifted  # Adds previous snow levels to dataframe
     df = df.dropna()  # Removes null values
     return df
@@ -32,9 +33,10 @@ def create_df(file_name):  # Creating a dataframe using a csv
     return df
 
 
-def test_train_split(df, column_name):
+def test_train_split(df, column_name, station_name):
     y = df[column_name]  # Assign snow depth to y-axis (labels)
     X = df.drop([column_name, 'Date'], axis=1)  # Removes date and snow depth column
+    # X = tanh_df(X, station_name)
     train_size = int(round(len(X) * 0.6, 0))  # Training data is 60% of data
     X_train, X_test, y_train, y_test = X.iloc[0:train_size], X.iloc[train_size+1:-1], y.iloc[0:train_size], y.iloc[train_size+1:-1]
     X_train, X_test, y_train, y_test = np.array(X_train), np.array(X_test), np.array(y_train), np.array(y_test)
@@ -46,24 +48,35 @@ def test_train_split(df, column_name):
     return X_train, X_test, y_train, y_test, time_axis
 
 
-def plot_nn(predictions_s, y_test, predictions_n, time_axis):
-    plt.figure(figsize=(8, 5))
-    plt.plot(time_axis, predictions_s, 'r-', label='Using previous day')
-    plt.plot(time_axis, predictions_n, 'g-', label='Without previous day')
-    plt.plot(time_axis, y_test, 'b-', label='Measured')
-    plt.legend()
+def tanh_df(df, station_name):
+    tanh = []
+    scaled = (df[station_name + ' Air Temperature Average (degC)']/df[station_name + ' Air Temperature Average (degC)'].max()) * 5
+    scaled = pd.DataFrame(scaled)
+    for index, row in scaled.iterrows():
+        value = math.tanh(row[station_name + ' Air Temperature Average (degC)'])
+        tanh.append(value)
+    df['tanh'] = tanh
+    return df
+
+
+def plot_nn(predictions_s, y_test, predictions_n, time_axis, station_name):
+    plt.figure(figsize=(10, 7))
+    plt.plot(time_axis, predictions_s, 'g-', label='Predicting Snow 3 Months In Advance')
+    plt.plot(time_axis, predictions_n, 'r-', label='Predicting Snow Using Temperature and Precipitation')
+    plt.plot(time_axis, y_test, 'b-', label='Measured Data')
+    plt.legend(loc=2)
     plt.ylabel('Snow Depth (cm)')
     plt.xlabel('Date')
     plt.gcf().autofmt_xdate()
-    plt.title('Fielding Lake Snow Depth')
+    plt.title(station_name + ' Snow Depth using Linear Regression')
     plt.show()
 
 
-def lin_reg_plot(column_name, plot):
-    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Fielding_Lake_1268_clean.csv'  # File location
+def lin_reg_plot(column_name, plot, station_name):
+    file_name = 'D:/Users/Joshg/Documents/MDM3/Alaska/Alexander_Lake_1267_clean.csv'  # File location
     df = create_df_shift(file_name, column_name)
 
-    X_train_s, X_test_s, y_train, y_test, time_axis = test_train_split(df, column_name)  # _s at the end for shifted
+    X_train_s, X_test_s, y_train, y_test, time_axis = test_train_split(df, column_name, station_name)  # _s at the end for shifted
     X_train_n, X_test_n = np.delete(X_train_s, 6, 1), np.delete(X_test_s, 6, 1)  # _n at the end for not shifted
 
     reg_s = LinearRegression().fit(X_train_s, y_train)  # Creating a linear regression
@@ -79,16 +92,16 @@ def lin_reg_plot(column_name, plot):
     reg_score_n = reg_n.score(X_train_n, y_train)
 
     if plot == 'yes':
-        plot_nn(prediction_s, y_test, prediction_n, time_axis)
+        plot_nn(prediction_s, y_test, prediction_n, time_axis, station_name)
 
     return rms_s, rms_n, reg_score_s, reg_score_n
 
 
-rms_s, rms_n, reg_score_s, reg_score_n = lin_reg_plot(column_name, 'yes')
-print('--------- Using previous snow depth -------------')
+rms_s, rms_n, reg_score_s, reg_score_n = lin_reg_plot(column_name, 'yes', station_name)
+print('--------- Predicting Snow 3 Months In Advance -------------')
 print('rms is ' + str(rms_s))  # Calculating and printing mean rms
 print('reg score is ' + str(reg_score_s))  # This is the score calculated by sklearn
 
-print('------- Not using previous snow depth ------------')
+print('----- Predicting Snow Using Temperature and Precipitation -----')
 print('rms is ' + str(rms_n))  # Calculating and printing mean rms
 print('reg score is ' + str(reg_score_n))  # This is the score calculated by sklearn
