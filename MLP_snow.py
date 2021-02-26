@@ -26,7 +26,7 @@ column_name = station_name + ' Snow Depth (cm) Start of Day Values'
 def create_df(file_name, column_name):  # Creating a dataframe using a csv
     df = pd.read_csv(file_name)  # df stands for dataframe
     shifted = df[column_name]  # Creating an extra column containing the previous days snow depth
-    shifted = shifted.shift(periods=90)
+    shifted = shifted.shift(periods=-90)
     df['Prev Snow Depth (cm)'] = shifted  # Adds previous snow levels to dataframe
     df = df.dropna()  # Removes null values
     return df

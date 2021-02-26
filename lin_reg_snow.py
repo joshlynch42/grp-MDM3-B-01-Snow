@@ -20,8 +20,8 @@ column_name = station_name + ' Snow Depth (cm) Start of Day Values'
 
 def create_df_shift(file_name, column_name):  # Creating a dataframe using a csv
     df = pd.read_csv(file_name)  # df stands for dataframe
-    shifted = df[column_name]  # Creating an extra column containing the previous days snow depth
-    shifted = shifted.shift(periods=90)
+    shifted = df[column_name]  # Creating an extra column containing the previous days snow depth26.67
+    shifted = shifted.shift(periods=-90)
     df['Prev Snow Depth (cm)'] = shifted  # Adds previous snow levels to dataframe
     df = df.dropna()  # Removes null values
     return df
@@ -45,6 +45,7 @@ def test_train_split(df, column_name, station_name):
     date_time_obj = datetime.datetime.strptime(min_date, '%Y-%m-%d')
     max_date = date_time_obj + timedelta(days=len(y_test) - 1)
     time_axis = pd.date_range(start=min_date, end=max_date)
+    print(time_axis)
     return X_train, X_test, y_train, y_test, time_axis
 
 
